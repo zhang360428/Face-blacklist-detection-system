@@ -19,4 +19,4 @@
 build_blacklist.py用于对该数据集建立黑名单人脸库（只出现一次的人脸直接进测试集，出现一个人多张人脸图片的情况，则将第一张图片进入黑名单人脸库其他图片则作为测试集使用）
 evaluate.py用于验证测试集上的效果，对于正负样本分别的拦截情况
 
-![image](https://github.com/zhang360428/Face-blacklist-detection-system/blob/main/IMG/confusion_matrix_face.png)
+![image](https://github.com/zhang360428/Face-blacklist-detection-system/blob/main/IMG/confusion_matrix_face.png){:height="50%" width="50%"}
