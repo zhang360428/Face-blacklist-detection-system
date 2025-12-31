@@ -29,3 +29,7 @@ evaluate.py用于验证测试集上的效果，对于正负样本分别的拦截
 为了方便测试，将测试过程封装为FastAPI的服务，只需要./start_service.sh即可将服务部署在9876端口，前端页面如下：
 
 <img src="IMG/system1.png" width="80%">
+
+上传图片后可以检测该人物是否出现在人脸库中，效果如下：
+
+<img src="IMG/system2.png" width="100%">
