@@ -32,4 +32,4 @@ evaluate.py用于验证测试集上的效果，对于正负样本分别的拦截
 
 上传图片后可以检测该人物是否出现在人脸库中，效果如下：
 
-<img src="IMG/system2.png" width="100%">
+<img src="IMG/system2.png" width="60%">
