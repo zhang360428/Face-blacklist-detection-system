@@ -1,0 +1,3 @@
+该目录下的docker-compose.yml文件用于启动milvus的docker镜像，且已经针对国内网络连接问题更改了docker源
+
+只需要docker-compose up -d即可该项目所需的数据库服务
