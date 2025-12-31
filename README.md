@@ -33,3 +33,30 @@ evaluate.py用于验证测试集上的效果，对于正负样本分别的拦截
 上传图片后可以检测该人物是否出现在人脸库中，效果如下：
 
 <img src="IMG/system2.png" width="60%">
+
+当人我们的人脸检测接口并不只提供一种形式的服务，实际上我们提供三种形式的文件上传方式：
+
+### 通过图片路径检测 (/detect)
+直接传入图片的绝对路径进行检测
+curl -X POST "http://127.0.0.1:9876/detect" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "image_path": "/mnt/data4/dcr/测试图片/嫌疑人张三_001.jpg"
+  }'
+
+### 通过文件上传检测 (/upload)
+使用 multipart/form-data 格式上传图片文件
+curl -X POST "http://127.0.0.1:9876/upload" \
+  -F "file=@/mnt/data4/dcr/测试图片/嫌疑人李四_002.jpg"
+
+### 通过Base64编码检测 (/detect_base64)
+传入Base64编码的图片数据，支持纯Base64和Data URI格式
+使用纯Base64（需要先编码）
+base64_image=$(base64 -w 0 /mnt/data4/dcr/测试图片/未知人员_003.jpg)
+
+curl -X POST "http://127.0.0.1:9876/detect_base64" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"image_base64\": \"$base64_image\",
+    \"filename\": \"unknown_person.jpg\"
+  }"
