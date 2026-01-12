@@ -1068,7 +1068,7 @@ if __name__ == "__main__":
     # 启动服务
     uvicorn.run(
         "face_detection_service:app",
-        host="127.0.0.1",
+        host="0.0.0.0",
         port=9876,
         reload=False,
         log_level="info"
