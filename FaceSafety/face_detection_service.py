@@ -109,7 +109,22 @@ def process_image(image_data: np.ndarray, filename: str = "uploaded_image") -> D
     try:
         # 将numpy数组转换为临时文件（face_model需要文件路径）
         temp_path = UPLOAD_DIR / f"temp_{int(start_time)}_{filename}"
-        Image.fromarray(image_data).save(temp_path)
+        img = Image.fromarray(image_data)
+        
+        # 修复：将RGBA模式转换为RGB（JPEG不支持透明度通道）
+        # if img.mode == 'RGBA':
+        #     img = img.convert('RGB')
+        # 转换为RGB（处理透明通道）
+        if img.mode != 'RGB':
+            if img.mode == 'RGBA':
+                # 透明背景处理
+                background = Image.new('RGB', img.size, (255, 255, 255))
+                background.paste(img, mask=img.split()[-1])
+                img = background
+            else:
+                img = img.convert("RGB")
+        
+        img.save(temp_path)
         
         success, feature, _ = face_model.extract_feature(str(temp_path))
         
@@ -221,6 +236,73 @@ async def upload_face(file: UploadFile = File(...)):
 # ==================== 新增：Base64检测接口 ====================
 @app.post("/detect_base64", response_model=DetectionResponse)
 async def detect_face_base64(request: ImageBase64Request):
+    import base64
+    import re
+    
+    try:
+        # 获取base64数据（去掉data URI前缀）
+        image_base64 = request.image_base64
+        
+        # 清理Base64字符串（移除换行符和空格）
+        image_base64 = image_base64.replace('\n', '').replace('\r', '').replace(' ', '')
+        
+        # 处理data URI格式 (data:image/jpeg;base64,)
+        if ',' in image_base64:
+            match = re.match(r'data:image/[^;]+;base64,(.*)', image_base64)
+            if match:
+                image_base64 = match.group(1)
+        
+        # 解码base64（添加错误处理）
+        try:
+            # 确保字符串长度是4的倍数
+            missing_padding = len(image_base64) % 4
+            if missing_padding != 0:
+                image_base64 += '=' * (4 - missing_padding)
+            
+            image_data = base64.b64decode(image_base64, validate=True)
+        except Exception as e:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Base64解码失败: {str(e)}。请确保提供有效的Base64编码图片数据。"
+            )
+        
+        # 验证解码后的数据不为空
+        if not image_data:
+            raise HTTPException(
+                status_code=400,
+                detail="Base64解码后数据为空"
+            )
+        
+        # 将解码后的数据转换为图片
+        try:
+            img = Image.open(io.BytesIO(image_data))
+            img_array = np.array(img)
+        except Exception as e:
+            raise HTTPException(
+                status_code=400,
+                detail=f"无法解析图片数据: {str(e)}。可能不是有效的图片格式。"
+            )
+        
+        # 验证图片数据有效性
+        if img_array is None or img_array.size == 0:
+            raise HTTPException(
+                status_code=400,
+                detail="无效的图片数据"
+            )
+        
+        # 调用统一处理函数
+        return process_image(img_array, request.filename)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"处理base64图片失败: {str(e)}"
+        )
+# ============================================================
+
+async def detect_face_base64_old(request: ImageBase64Request):
     """
     检测base64编码的图片是否在黑人脸库中
     
